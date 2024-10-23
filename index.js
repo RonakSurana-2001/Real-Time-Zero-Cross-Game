@@ -7,10 +7,12 @@ const http_1 = __importDefault(require("http"));
 const express_1 = __importDefault(require("express"));
 const WebSocket = require('websocket').server;
 const app = (0, express_1.default)();
+const FRONTEND_PORT = process.env.PORT || 5143;
+const BACKEND_PORT = process.env.PORT || 3000;
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
 });
-app.listen(5143, () => {
+app.listen(FRONTEND_PORT, () => {
     console.log("Frontend Running on port 5143");
 });
 const server = http_1.default.createServer();
@@ -133,6 +135,6 @@ function S4() {
 }
 // then to call it, plus stitch in '4' in the third group
 const guid = () => (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
-server.listen(3000, () => {
+server.listen(BACKEND_PORT, () => {
     console.log(new Date() + ' Server is listening on port 3000');
 });
