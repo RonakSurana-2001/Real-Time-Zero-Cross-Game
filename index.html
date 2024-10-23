@@ -6,21 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-
-<body>
-    <h2>Zero Cross</h2>
-    <div id="gameidDisplay" style="display: none;">The Game Id is : <span id="gamenumber"></span></div>
-    <div>
+<body style="background-color:rgb(236, 228, 217)">
+    <div style="text-align: center;font-size: 40px;font-weight: bold;color:rebeccapurple;padding: 10px;font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">Real Time Zero Cross Game</div>
+    <div id="gameidDisplay" style="display: none;font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;text-align: center;">The Game Id is : <span id="gamenumber"></span></div>
+    <div style="display: flex;flex-direction: column;justify-content: center;align-items: center;padding: 10px;">
         <div style="padding: 5px;">
-            <button id="newgame">New Game</button>
+            <button id="newgame" style="font-size: 20px;border:none;padding: 5px;background-color: cadetblue;border-radius: 3px;color: aliceblue;">New Game</button>
         </div>
-        <div style="padding: 5px; gap: 5px;">
-            <input type="text" id="joingametextBox" />
-            <button id="joinButton">Join Game</button>
+        <div style="padding: 9px; gap: 5px;display: flex;flex-direction: column;">
+            <input type="text" id="joingametextBox" style="font-size: larger;width: auto;border: 2px solid black;"/>
+            <button id="joinButton" style="font-size: 20px;border:none;padding: 5px;background-color: cadetblue;border-radius: 3px;color: aliceblue;">Join Game</button>
         </div>
     </div>
-    <div id="cross-zero-board"
-        style="display: grid; grid-template-rows: auto auto auto; grid-template-columns: auto auto auto;width:fit-content;padding: 5px;">
+    <div style="display: flex;flex-direction: row;justify-content: center;padding: 5px;">
+        <div id="cross-zero-board"
+            style="display: grid; grid-template-rows: auto auto auto; grid-template-columns: auto auto auto;width:fit-content;padding: 5px;">
+        </div>
     </div>
     <script>
         let clientId = null
@@ -66,7 +67,10 @@
                 }
             }
             else if (response.method == "not-accept") {
-                alert("Only 2 Players can play game at a time")
+                alert("Only 2 Players can play game at a time or you are have not created or joined a game")
+            }
+            else if (response.method == "another-player-chance") {
+                alert("Another Player Chance")
             }
         }
         newgame.addEventListener("click", (e) => {
@@ -89,12 +93,17 @@
         })
         for (let i = 0; i < 9; i++) {
             const b = document.createElement("div")
-            b.style.width = "50px"
-            b.style.height = "50px"
+            b.style.width = "80px"
+            b.style.height = "80px"
             b.style.border = "1px solid black"
             b.id = "" + i
-            b.textContent = "" + i
+            b.textContent = "-"
             b.style.cursor = "pointer"
+            b.style.display="flex"
+            b.style.flexDirection="row"
+            b.style.justifyContent="center"
+            b.style.alignItems="center"
+            b.style.fontSize="40px"
             cross_zero_board.append(b)
             b.addEventListener("click", (e) => {
                 e.preventDefault()

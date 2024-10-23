@@ -17,12 +17,14 @@ const server = http_1.default.createServer();
 const wss = new WebSocket({ "httpServer": server });
 let games = {};
 let clients = {};
+let gameChance = {};
 wss.on('request', (request) => {
     const connection = request.accept(null, request.origin);
     connection.on('open', () => console.log('Opened'));
     connection.on('close', () => console.log('Closed'));
     const clientId = guid();
     let board = {};
+    let chance = {};
     let payload = {
         "method": "connect",
         "clientId": clientId
@@ -40,6 +42,7 @@ wss.on('request', (request) => {
                 "createrId": result.clientId,
                 "players": []
             };
+            gameChance[gameId] = 0;
             games[gameId].players.push({
                 "clientId": result.clientId,
                 "symbol": 'X'
@@ -48,13 +51,15 @@ wss.on('request', (request) => {
                 "method": "create",
                 "game": games[gameId]
             };
+            chance[clientId] = {
+                "key": 0
+            };
             const con = clients[clientId].connection;
             con.send(JSON.stringify(payload));
         }
         else if (result.method == "join") {
             const joinerClientId = result.clientId;
             let gameidnumber = result.gameId;
-            console.log(games[gameidnumber]);
             if (games[gameidnumber].players.length > 1) {
                 payload = {
                     "method": "not-accept",
@@ -72,23 +77,45 @@ wss.on('request', (request) => {
                     "joinerClientId": joinerClientId,
                     "game": games[gameidnumber]
                 };
+                chance[clientId] = {
+                    "key": 1
+                };
                 games[gameidnumber].players.forEach((client) => {
                     clients[client.clientId].connection.send(JSON.stringify(payload));
                 });
             }
         }
         else if (result.method == "play") {
-            board[result.boxId] = {
-                "clientId": clientId,
-                "symbol": games[result.gameId].players.find((p) => p.clientId === clientId).symbol
-            };
-            payload = {
-                "method": "play",
-                "board": board
-            };
-            UpdateBoard(result.gameId);
-            const con = clients[clientId].connection;
-            con.send(JSON.stringify(payload));
+            try {
+                if (gameChance[result.gameId] == chance[clientId].key) {
+                    board[result.boxId] = {
+                        "clientId": clientId,
+                        "symbol": games[result.gameId].players.find((p) => p.clientId === clientId).symbol
+                    };
+                    payload = {
+                        "method": "play",
+                        "board": board
+                    };
+                    UpdateBoard(result.gameId);
+                    gameChance[result.gameId] = gameChance[result.gameId] == 0 ? 1 : 0;
+                    const con = clients[clientId].connection;
+                    con.send(JSON.stringify(payload));
+                }
+                else {
+                    payload = {
+                        "method": "another-player-chance",
+                    };
+                    const con = clients[clientId].connection;
+                    con.send(JSON.stringify(payload));
+                }
+            }
+            catch (e) {
+                payload = {
+                    "method": "not-accept",
+                };
+                const con = clients[clientId].connection;
+                con.send(JSON.stringify(payload));
+            }
         }
     });
     function UpdateBoard(gameidnumber) {
