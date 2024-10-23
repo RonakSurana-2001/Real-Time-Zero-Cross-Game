@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h2>Zero Cross</h2>
+    <div id="gameidDisplay" style="display: none;">The Game Id is : <span id="gamenumber"></span></div>
+    <div>
+        <div style="padding: 5px;">
+            <button id="newgame">New Game</button>
+        </div>
+        <div style="padding: 5px; gap: 5px;">
+            <input type="text" id="joingametextBox" />
+            <button id="joinButton">Join Game</button>
+        </div>
+    </div>
+    <div id="cross-zero-board"
+        style="display: grid; grid-template-rows: auto auto auto; grid-template-columns: auto auto auto;width:fit-content;padding: 5px;">
+    </div>
+    <script>
+        let clientId = null
+        let gameId = null
+        let ws = new WebSocket("ws://localhost:3000")
+        const newgame = document.getElementById("newgame")
+        const gamenumber = document.getElementById("gamenumber")
+        const gameidDisplay = document.getElementById("gameidDisplay")
+        const joingametextBox = document.getElementById("joingametextBox")
+        const joinButton = document.getElementById("joinButton")
+        const cross_zero_board = document.getElementById("cross-zero-board")
+        ws.onmessage = message => {
+            const response = JSON.parse(message.data)
+            if (response.method == "connect") {
+                clientId = response.clientId
+                console.log(`Client ${clientId} Connected`)
+            }
+            else if (response.method == "create") {
+                gameId = response.game.id
+                gamenumber.innerText = response.game.id
+                console.log(`Game ${response.game.id} created by ${clientId}`)
+            }
+            else if (response.method == "join") {
+                gameId = response.game.id
+                alert(`Game ${response.game.id} was joined by ${response.joinerClientId}`)
+            }
+            else if (response.method == "play") {
+                gameBoard = response.board
+                for (let i = 0; i < 9; i++) {
+                    let bd = document.getElementById("" + i);
+                    if (gameBoard["" + i]) {
+                        bd.textContent = gameBoard["" + i].symbol; 
+                    } 
+                }
+            }
+            else if (response.method == "update") {
+                gameBoard = response.board
+                for (let i = 0; i < 9; i++) {
+                    let bd = document.getElementById("" + i);
+                    if (gameBoard["" + i]) {
+                        bd.textContent = gameBoard["" + i].symbol; 
+                    } 
+                }
+            }
+            else if (response.method == "not-accept") {
+                alert("Only 2 Players can play game at a time")
+            }
+        }
+        newgame.addEventListener("click", (e) => {
+            e.preventDefault()
+            gameidDisplay.style.display = "block"
+            payload = {
+                "method": "create",
+                "clientId": clientId
+            }
+            ws.send(JSON.stringify(payload))
+        })
+        joinButton.addEventListener("click", (e) => {
+            e.preventDefault()
+            payload = {
+                "method": "join",
+                "clientId": clientId,
+                "gameId": joingametextBox.value
+            }
+            ws.send(JSON.stringify(payload))
+        })
+        for (let i = 0; i < 9; i++) {
+            const b = document.createElement("div")
+            b.style.width = "50px"
+            b.style.height = "50px"
+            b.style.border = "1px solid black"
+            b.id = "" + i
+            b.textContent = "" + i
+            b.style.cursor = "pointer"
+            cross_zero_board.append(b)
+            b.addEventListener("click", (e) => {
+                e.preventDefault()
+                payload = {
+                    "method": "play",
+                    "clientId": clientId,
+                    "gameId": gameId,
+                    "boxId": "" + b.id
+                }
+                ws.send(JSON.stringify(payload))
+            })
+        }
+    </script>
+</body>
+
+</html>
