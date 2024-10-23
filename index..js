@@ -85,7 +85,7 @@ wss.on('request', (request) => {
         }
         else if (result.method == "play") {
             try {
-                if (gameChance[result.gameId] == chance[clientId].key) {
+                if (gameChance[result.gameId] == chance[clientId].key && !board[result.boxId]) {
                     board[result.boxId] = {
                         "clientId": clientId,
                         "symbol": games[result.gameId].players.find((p) => p.clientId === clientId).symbol
@@ -95,6 +95,7 @@ wss.on('request', (request) => {
                         "board": board
                     };
                     UpdateBoard(result.gameId);
+                    console.log(board);
                     gameChance[result.gameId] = gameChance[result.gameId] == 0 ? 1 : 0;
                     const con = clients[clientId].connection;
                     con.send(JSON.stringify(payload));
@@ -115,10 +116,13 @@ wss.on('request', (request) => {
                 con.send(JSON.stringify(payload));
             }
         }
+        else if (result.method == "update") {
+            board = result.board;
+        }
     });
     function UpdateBoard(gameidnumber) {
         payload = {
-            "method": "update",
+            "method": "play",
             "board": board
         };
         games[gameidnumber].players.forEach((client) => {
@@ -130,6 +134,4 @@ function S4() {
     return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
 }
 const guid = () => (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
-server.listen(PORT, () => {
-    console.log(new Date() + ' Server is listening on port 3000');
-});
+server.listen(PORT);

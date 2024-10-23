@@ -26,13 +26,14 @@
     <script>
         let clientId = null
         let gameId = null
-        let ws = new WebSocket("https://real-time-zero-cross-game-new.onrender.com")
+        let ws = new WebSocket("ws://localhost:3000")
         const newgame = document.getElementById("newgame")
         const gamenumber = document.getElementById("gamenumber")
         const gameidDisplay = document.getElementById("gameidDisplay")
         const joingametextBox = document.getElementById("joingametextBox")
         const joinButton = document.getElementById("joinButton")
         const cross_zero_board = document.getElementById("cross-zero-board")
+        let gameBoard=null;
         ws.onmessage = message => {
             const response = JSON.parse(message.data)
             if (response.method == "connect") {
@@ -56,21 +57,16 @@
                         bd.textContent = gameBoard["" + i].symbol; 
                     } 
                 }
-            }
-            else if (response.method == "update") {
-                gameBoard = response.board
-                for (let i = 0; i < 9; i++) {
-                    let bd = document.getElementById("" + i);
-                    if (gameBoard["" + i]) {
-                        bd.textContent = gameBoard["" + i].symbol; 
-                    } 
-                }
+                ws.send(JSON.stringify({
+                    "method":"update",
+                    "board":gameBoard
+                }))
             }
             else if (response.method == "not-accept") {
                 alert("Only 2 Players can play game at a time or you are have not created or joined a game")
             }
             else if (response.method == "another-player-chance") {
-                alert("Another Player Chance")
+                alert("Another Player Chance or Player has already done a move at that position")
             }
         }
         newgame.addEventListener("click", (e) => {
