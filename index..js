@@ -4,13 +4,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = __importDefault(require("http"));
+const express_1 = __importDefault(require("express"));
+const app = (0, express_1.default)();
 const WebSocket = require('websocket').server;
-const BACKEND_PORT = process.env.PORT || 3000;
-const server = http_1.default.createServer();
+const PORT = process.env.PORT || 3000;
+const server = http_1.default.createServer(app);
 const wss = new WebSocket({ "httpServer": server });
 let games = {};
 let clients = {};
 let gameChance = {};
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/index.html");
+});
 wss.on('request', (request) => {
     const connection = request.accept(null, request.origin);
     connection.on('open', () => console.log('Opened'));
@@ -125,6 +130,6 @@ function S4() {
     return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
 }
 const guid = () => (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
-server.listen(BACKEND_PORT, () => {
+server.listen(PORT, () => {
     console.log(new Date() + ' Server is listening on port 3000');
 });
