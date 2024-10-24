@@ -127,7 +127,6 @@
         }
         let winnerCheckCriteria = {
             rowsCheck: function () {
-                console.log("RowCheck")
                 if (document.getElementById("0").textContent == document.getElementById("1").textContent &&
                     document.getElementById("1").textContent == document.getElementById("2").textContent &&
                     document.getElementById("0").textContent !== "-") {
@@ -145,7 +144,6 @@
                 }
             },
             columnsCheck: function () {
-                console.log("ColumnsCheck")
                 if (document.getElementById("0").textContent == document.getElementById("3").textContent &&
                     document.getElementById("3").textContent == document.getElementById("6").textContent &&
                     document.getElementById("0").textContent !== "-") {
@@ -163,7 +161,6 @@
                 }
             },
             diagonalsCheck: function () {
-                console.log("DiagonalsCheck")
                 if (document.getElementById("0").textContent == document.getElementById("4").textContent &&
                     document.getElementById("4").textContent == document.getElementById("8").textContent &&
                     document.getElementById("0").textContent !== "-") {
