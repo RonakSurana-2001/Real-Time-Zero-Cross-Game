@@ -6,16 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zero Cross Game</title>
 </head>
+
 <body style="background-color:rgb(236, 228, 217)">
-    <div style="text-align: center;font-size: 40px;font-weight: bold;color:rebeccapurple;padding: 10px;font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">Real Time Zero Cross Game</div>
-    <div id="gameidDisplay" style="display: none;font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;text-align: center;">The Game Id is : <span id="gamenumber"></span></div>
+    <div
+        style="text-align: center;font-size: 40px;font-weight: bold;color:rebeccapurple;padding: 10px;font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">
+        Real Time Zero Cross Game</div>
+    <div id="gameidDisplay"
+        style="display: none;font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;text-align: center;">
+        The Game Id is : <span id="gamenumber"></span></div>
     <div style="display: flex;flex-direction: column;justify-content: center;align-items: center;padding: 10px;">
         <div style="padding: 5px;">
-            <button id="newgame" style="font-size: 20px;border:none;padding: 5px;background-color: cadetblue;border-radius: 3px;color: aliceblue;">New Game</button>
+            <button id="newgame"
+                style="font-size: 20px;border:none;padding: 5px;background-color: cadetblue;border-radius: 3px;color: aliceblue;">New
+                Game</button>
         </div>
-        <div style="padding: 9px; gap: 5px;display: flex;flex-direction: column;">
-            <input type="text" id="joingametextBox" style="font-size: larger;width: auto;border: 2px solid black;"/>
-            <button id="joinButton" style="font-size: 20px;border:none;padding: 5px;background-color: cadetblue;border-radius: 3px;color: aliceblue;">Join Game</button>
+        <div style="padding: 9px; gap: 5px;display: flex;flex-direction: column;" id="joinGameDetails">
+            <input type="text" id="joingametextBox" style="font-size: larger;width: auto;border: 2px solid black;" />
+            <button id="joinButton"
+                style="font-size: 20px;border:none;padding: 5px;background-color: cadetblue;border-radius: 3px;color: aliceblue;">Join
+                Game</button>
         </div>
     </div>
     <div style="display: flex;flex-direction: row;justify-content: center;padding: 5px;">
@@ -26,14 +35,15 @@
     <script>
         let clientId = null
         let gameId = null
-        let ws = new WebSocket("https://real-time-zero-cross-game-new.onrender.com")
+        let ws = new WebSocket("ws://localhost:3000/")
         const newgame = document.getElementById("newgame")
         const gamenumber = document.getElementById("gamenumber")
         const gameidDisplay = document.getElementById("gameidDisplay")
         const joingametextBox = document.getElementById("joingametextBox")
         const joinButton = document.getElementById("joinButton")
         const cross_zero_board = document.getElementById("cross-zero-board")
-        let gameBoard=null;
+        let joinGameDetails = document.getElementById("joinGameDetails")
+        let gameBoard = null;
         ws.onmessage = message => {
             const response = JSON.parse(message.data)
             if (response.method == "connect") {
@@ -43,6 +53,8 @@
             else if (response.method == "create") {
                 gameId = response.game.id
                 gamenumber.innerText = response.game.id
+                joinGameDetails.style.display = "none"
+                newgame.style.display = "none"
                 console.log(`Game ${response.game.id} created by ${clientId}`)
             }
             else if (response.method == "join") {
@@ -54,13 +66,14 @@
                 for (let i = 0; i < 9; i++) {
                     let bd = document.getElementById("" + i);
                     if (gameBoard["" + i]) {
-                        bd.textContent = gameBoard["" + i].symbol; 
-                    } 
+                        bd.textContent = gameBoard["" + i].symbol;
+                    }
                 }
                 ws.send(JSON.stringify({
-                    "method":"update",
-                    "board":gameBoard
+                    "method": "update",
+                    "board": gameBoard
                 }))
+                checkWinner()
             }
             else if (response.method == "not-accept") {
                 alert("Only 2 Players can play game at a time or you are have not created or joined a game")
@@ -95,11 +108,11 @@
             b.id = "" + i
             b.textContent = "-"
             b.style.cursor = "pointer"
-            b.style.display="flex"
-            b.style.flexDirection="row"
-            b.style.justifyContent="center"
-            b.style.alignItems="center"
-            b.style.fontSize="40px"
+            b.style.display = "flex"
+            b.style.flexDirection = "row"
+            b.style.justifyContent = "center"
+            b.style.alignItems = "center"
+            b.style.fontSize = "40px"
             cross_zero_board.append(b)
             b.addEventListener("click", (e) => {
                 e.preventDefault()
@@ -112,6 +125,87 @@
                 ws.send(JSON.stringify(payload))
             })
         }
+        let winnerCheckCriteria = {
+            rowsCheck: function () {
+                console.log("RowCheck")
+                if (document.getElementById("0").textContent == document.getElementById("1").textContent &&
+                    document.getElementById("1").textContent == document.getElementById("2").textContent &&
+                    document.getElementById("0").textContent !== "-") {
+                    declareWinner(document.getElementById("0").textContent)
+                }
+                if (document.getElementById("3").textContent == document.getElementById("4").textContent &&
+                    document.getElementById("4").textContent == document.getElementById("5").textContent &&
+                    document.getElementById("3").textContent !== "-") {
+                    declareWinner(document.getElementById("3").textContent)
+                }
+                if (document.getElementById("6").textContent == document.getElementById("7").textContent &&
+                    document.getElementById("7").textContent == document.getElementById("8").textContent &&
+                    document.getElementById("6").textContent !== "-") {
+                    declareWinner(document.getElementById("6").textContent)
+                }
+            },
+            columnsCheck: function () {
+                console.log("ColumnsCheck")
+                if (document.getElementById("0").textContent == document.getElementById("3").textContent &&
+                    document.getElementById("3").textContent == document.getElementById("6").textContent &&
+                    document.getElementById("0").textContent !== "-") {
+                    declareWinner(document.getElementById("0").textContent)
+                }
+                if (document.getElementById("1").textContent == document.getElementById("4").textContent &&
+                    document.getElementById("4").textContent == document.getElementById("7").textContent &&
+                    document.getElementById("1").textContent !== "-") {
+                    declareWinner(document.getElementById("1").textContent)
+                }
+                if (document.getElementById("2").textContent == document.getElementById("5").textContent &&
+                    document.getElementById("5").textContent == document.getElementById("8").textContent &&
+                    document.getElementById("2").textContent !== "-") {
+                    declareWinner(document.getElementById("2").textContent)
+                }
+            },
+            diagonalsCheck: function () {
+                console.log("DiagonalsCheck")
+                if (document.getElementById("0").textContent == document.getElementById("4").textContent &&
+                    document.getElementById("4").textContent == document.getElementById("8").textContent &&
+                    document.getElementById("0").textContent !== "-") {
+                    declareWinner(document.getElementById("0").textContent)
+                }
+                if (document.getElementById("2").textContent == document.getElementById("4").textContent &&
+                    document.getElementById("4").textContent == document.getElementById("6").textContent &&
+                    document.getElementById("2").textContent !== "-") {
+                    declareWinner(document.getElementById("2").textContent)
+                }
+            }
+        }
+
+        function declareWinner(symbol) {
+            let body = document.getElementsByTagName("body")[0];
+            body.innerHTML = ""; // Clear the entire body content
+
+            let winnerMessage = document.createElement("div");
+            winnerMessage.style.textAlign = "center";
+            winnerMessage.style.fontSize = "50px";
+            winnerMessage.style.fontWeight = "bold";
+            winnerMessage.style.color = "rebeccapurple";
+            winnerMessage.style.padding = "50px";
+            winnerMessage.style.fontFamily = "'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif";
+
+            if (symbol === 'X') {
+                winnerMessage.innerHTML = "Player 1 is the Winner!";
+            } else if (symbol === 'O') {
+                winnerMessage.innerHTML = "Player 2 is the Winner!";
+            }
+
+            body.appendChild(winnerMessage);
+            return;
+        }
+
+
+        function checkWinner() {
+            winnerCheckCriteria.rowsCheck()
+            winnerCheckCriteria.columnsCheck()
+            winnerCheckCriteria.diagonalsCheck()
+        }
+
     </script>
 </body>
 
